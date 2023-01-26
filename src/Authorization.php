@@ -73,7 +73,7 @@ class Authorization
             throw new AuthorizationException('The password should not be empty');
         }
         $statement = $this->database->getConnection()->prepare('SELECT * FROM user WHERE login = :username');
-        $statement->execute(['username' => $username]);
+        $statement->execute(['username' => $username,]);
         $user = $statement->fetch();
         if (empty($user)){
             throw new AuthorizationException('User with such login not found');
@@ -82,10 +82,25 @@ class Authorization
             $tocken = bin2hex(random_bytes(16));
             $proxy = $this->database->getConnection()->prepare('UPDATE user SET tocken = :tocken WHERE login = :username');
             $proxy->execute(['tocken' => $tocken, 'username' => $username]);
-            $this->session->setData('user', ['username' => $username]);
+            $this->session->setData('user', ['username' => $username, 'tocken' => $tocken]);
             return true;
         }
         throw new AuthorizationException('Incorrect login or password');
 
     }
+    /**public function page(array $data)
+    {
+        if (empty($data ['article'])) {
+            throw new AuthorizationException('The article should not be empty');
+        }
+        if (empty($data ['name'])) {
+            throw new AuthorizationException('The name should not be empty');
+        }
+        if (empty($data ['type'])) {
+            throw new AuthorizationException('The type should not be empty');
+        }
+        $statement = $this->database->getConnection()->prepare('SELECT * FROM accessories');
+        $statement->execute();
+        $outdata = $statement->fetchAll(\PDO::FETCH_ASSOC);
+    }**/
 }

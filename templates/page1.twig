@@ -2,4 +2,7 @@
 
 {% block body %}
     <h1>Table page</h1>
+    {% if user is not null %}
+    <p>{{ user.username|escape }}</p>
+    {% endif %}
 {% endblock %}

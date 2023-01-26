@@ -87,8 +87,8 @@ $app->post('/signup-post', function (ServerRequestInterface $request, ResponseIn
         ->withStatus(302);
 });
 
-$app->get('/page1', function (ServerRequestInterface $request, ResponseInterface $response) use ($twig) {
-    $body = $twig->render('page1.twig');
+$app->get('/page1', function (ServerRequestInterface $request, ResponseInterface $response) use ($twig, $session) {
+    $body = $twig->render('page1.twig', ['user' => $session->getData('user')]);
     $response->getBody()->write($body);
     return $response;
 });
@@ -97,7 +97,7 @@ $app->post('/page1-post', function (ServerRequestInterface $request, ResponseInt
     $response->getBody()->write('201 Created');
 });
 
-$app->get('/logout', function (ServerRequestInterface $request, ResponseInterface $response) use ($session){
+$app->get('/logout', function (ServerRequestInterface $request, ResponseInterface $response) use ($session, $authorization){
     $session->setData('user', null);
     return $response->withHeader('Location', '/')->withStatus(302);
 });
