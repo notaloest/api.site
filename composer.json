@@ -1,0 +1,24 @@
+{
+    "name": "notal/api.site",
+    "description": "Practic site",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Artem Voinskiy",
+            "email": "a.voinskiy@mgutm.ru"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "twig/twig": "^3.5",
+        "slim/slim": "^4.11",
+        "ext-pdo": "^8.1",
+        "php": "~8.1",
+        "slim/psr7": "^1.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}

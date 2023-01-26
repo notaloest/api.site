@@ -1,56 +1,76 @@
 <?php
-// разрешение выполнение с другого домена
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Headers: *, Authorization');
-header('Access-Control-Allow-Methods: *');
-header('Access-Control-Allow-Credentials: true');
-// определение данных как JSON
-header('Content-type: json/application');
-//подключение внешних файлов
-require 'db.php';
-require 'function.php';
+use \Slim\Factory\AppFactory;
+use \Psr\Http\Message\ServerRequestInterface;
+use \Psr\Http\Message\ResponseInterface;
+use \Twig\Loader\FilesystemLoader;
+use \Twig\Environment;
+use \App\Database;
+use \App\Authorization;
+use \App\AuthorizationException;
 
-$method = $_SERVER['REQUEST_METHOD'];
+require __DIR__. '/vendor/autoload.php';
 
-$q = $_GET['q'];
+$loader = new FilesystemLoader('templates');
+$twig = new Environment($loader);
 
-$params = explode('/', $q);
+$app = AppFactory::create();
+$app->addBodyParsingMiddleware(); // $_POST
 
-$type = $params[0];
-$id = $params[1];
+$config = include_once 'config/database.php';
+$dsn = $config['dsn'];
+$username = $config['username'];
+$password = $config['password'];
 
-if ($method === 'GET') {
-    if ($type === 'mess') {   // Получение сообщений
-        $data = file_get_contents('php://input');
-        $data = json_decode($data, true);
-        getMess($connect, $data);
-    } elseif ($type === 'logout') {
-        $data = file_get_contents('php://input');
-        $data = json_decode($data, true);
-        logout($connect, $data);
+$database = new Database($dsn, $username, $password);
+$authorization = new Authorization($database);
+
+$app->get('/', function (ServerRequestInterface $request, ResponseInterface $response) use ($twig) {
+
+    $body = $twig->render('index.twig');
+    $response->getBody()->write($body);
+    return $response;
+});
+
+$app->get('/login', function (ServerRequestInterface $request, ResponseInterface $response) use ($twig) {
+    $body = $twig->render('login.twig');
+    $response->getBody()->write($body);
+    return $response;
+});
+
+$app->post('/login-post', function (ServerRequestInterface $request, ResponseInterface $response){
+    $response->getBody()->write('202 Accepted');
+});
+
+$app->get('/signup', function (ServerRequestInterface $request, ResponseInterface $response) use ($twig) {
+    $body = $twig->render('signup.twig');
+    $response->getBody()->write($body);
+    return $response;
+});
+
+$app->post('/signup-post', function (ServerRequestInterface $request, ResponseInterface $response) use ($authorization) {
+    $params = (array) $request->getParsedBody();
+    try {
+        $authorization->signup($params);
+    } catch (AuthorizationException $exception) {
+        return $response->withHeader('Location', '/signup')
+            ->withStatus(302);
     }
-} elseif ($method === 'POST') {
-    if ($type === 'mess') {   //отправка сообщений
-        addMess($connect, $_POST);
-    } elseif ($type === 'signup') {   // регистрация
-        signup($connect, $_POST);
-    } elseif ($type === 'login') {   // авторизация
-        login($connect, $_POST);
-    }
-} elseif ($method === 'PATCH') {   // редактирование сообщений
-    if ($type === 'mess') {
-        if (isset($id)) {
-            $data = file_get_contents('php://input');
-            $data = json_decode($data, true);
-            editMess($connect, $id, $data);
-        }
-    }
-} elseif ($method === 'DELETE') {   // удаление сообщений
-    if ($type === 'mess') {
-        if (isset($id)) {
-            $data = file_get_contents('php://input');
-            $data = json_decode($data, true);
-            delMess($connect, $id, $data);
-        }
-    }
-}
+    return $response->withHeader('Location', '/')
+        ->withStatus(302);
+});
+
+$app->get('/page1', function (ServerRequestInterface $request, ResponseInterface $response) use ($twig) {
+    $body = $twig->render('page1.twig');
+    $response->getBody()->write($body);
+    return $response;
+});
+
+$app->post('/page1-post', function (ServerRequestInterface $request, ResponseInterface $response){
+    $response->getBody()->write('201 Created');
+});
+
+$app->get('/logout', function (ServerRequestInterface $request, ResponseInterface $response){
+    $response->getBody()->write('200 OK');
+});
+
+$app->run();
