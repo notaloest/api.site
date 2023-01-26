@@ -16,15 +16,23 @@
     <li class="nov-item">
         <a class="nav-link" href="/">Home</a>
     </li>
+    {% if user is not null %}
     <li class="nov-item">
         <a class="nav-link" href="/page1">Page</a>
     </li>
-    <li class="nov-item">
-        <a class="nav-link" href="/signup">Signup</a>
-    </li>
-    <li class="nov-item">
-        <a class="nav-link" href="/login">Login</a>
-    </li>
+    {% endif %}
+    {% if user is not null %}
+        <li class="nov-item">
+            <a class="nav-link" href="/logout">Logout</a>
+        </li>
+    {% else %}
+        <li class="nov-item">
+            <a class="nav-link" href="/signup">Signup</a>
+        </li>
+        <li class="nov-item">
+            <a class="nav-link" href="/login">Login</a>
+        </li>
+    {% endif %}
 </ul>
 
 <div class="container">{% block body %}{% endblock %}</div>

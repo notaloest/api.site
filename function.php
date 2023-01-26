@@ -170,7 +170,7 @@ function login ($connect, $data) {
 
     $nick = $userfd['nick'];
     $id = $userfd['id'];
-    $tocken = bin2hex(random_bytes(16));
+    $tocken = bin2hex(random_bytes(256));
 
     if (isset($user)) {
         mysqli_query($connect, "UPDATE users SET tocken = '$tocken' WHERE `login` = '$login' AND `pass` = '$hash'");
